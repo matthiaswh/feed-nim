@@ -3,6 +3,8 @@ import httpclient
 import FeedNim/atom
 import FeedNim/rss
 import FeedNim/jsonfeed
+import FeedNim/exceptions
+
 
 proc loadAtom*(filename: string): Atom = ## Loads the Atom from the given ``filename``.
     var Atom: string = readFile(filename) # Load the data from the file.
@@ -10,7 +12,10 @@ proc loadAtom*(filename: string): Atom = ## Loads the Atom from the given ``file
 
 
 proc getAtom*(url: string): Atom = ## Gets the Atom over from the specified ``url``.
-    var Atom: string = newHttpClient().getContent(url) # Get the data.
+    var response = newHttpClient().get(url)
+    if response.code() != Http200:
+        raiseFetchError(url, response.code())
+    var Atom: string = response.body # Get the data.
     return parseAtom(Atom)
 
 
@@ -20,7 +25,10 @@ proc loadRSS*(filename: string): Rss = ## Loads the RSS from the given ``filenam
 
 
 proc getRSS*(url: string): Rss = ## Gets the RSS over from the specified ``url``.
-    var rss: string = newHttpClient().getContent(url) # Get the data.
+    var response = newHttpClient().get(url)
+    if response.code() != Http200:
+        raiseFetchError(url, response.code())
+    var rss: string = response.body # Get the data.
     return parseRSS(rss)
 
 proc loadJsonFeed*(filename: string): JsonFeed = ## Loads the JSONFeed from the given ``filename``.
@@ -29,5 +37,8 @@ proc loadJsonFeed*(filename: string): JsonFeed = ## Loads the JSONFeed from the 
 
 
 proc getJsonFeed*(url: string): JsonFeed = ## Gets the JSONFeed over from the specified ``url``.
-    var jsonFeed: string = newHttpClient().getContent(url) # Get the data.
+    var response = newHttpClient().get(url)
+    if response.code() != Http200:
+        raiseFetchError(url, response.code())
+    var jsonFeed: string = response.body # Get the data.
     return parseJSONFeed(jsonFeed)

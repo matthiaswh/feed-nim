@@ -13,6 +13,8 @@ import xmltree
 import streams
 import sugar
 
+import exceptions
+
 type
     RSS* = object
         title*: string
@@ -101,7 +103,7 @@ func parseText ( node: XmlNode ): string =
     for item in node.items:
         content = content & $item
     # Strip CDATA
-    if content[0 .. 8] == "<![CDATA[":
+    if len(content) > 13 and content[0 .. 8] == "<![CDATA[":
         content = content.substr[9 .. content.len()-4 ]
         return content
     else:
@@ -147,13 +149,16 @@ proc parseRSS*(data: string): RSS =
     let root: XmlNode = parseXML(newStringStream(data))
     let channel: XmlNode = root.child("channel")
 
+    if channel == nil:
+        raiseParseError()
+
     # Create the return object.
     var rss: RSS = RSS()
 
     # Fill the required fields.
-    rss.title = channel.child("title").parseText()
-    rss.link = channel.child("link").innerText
-    rss.description = channel.child("description").parseText()
+    if channel.child("title") != nil: rss.title = channel.child("title").parseText()
+    if channel.child("link") != nil: rss.link = channel.child("link").innerText
+    if channel.child("description") != nil: rss.description = channel.child("description").parseText()
 
     # Fill the optional fields.
     for key in @["language", "dc:language"]:

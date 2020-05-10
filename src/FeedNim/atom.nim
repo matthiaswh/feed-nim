@@ -227,8 +227,8 @@ proc parseAtom* ( data: string ): Atom =
     atom.id = node.child("id").innerText
 
     atom.title = AtomText()
-    atom.title.text = node.child("title").parseText()
-    atom.updated = node.child("updated").innerText
+    if node.child("title") != nil: atom.title.text = node.child("title").parseText()
+    if node.child("updated") != nil: atom.updated = node.child("updated").innerText
 
     # Fill in the optional fields
     if node.child("author") != nil: atom.authors = node.parseAuthors()
